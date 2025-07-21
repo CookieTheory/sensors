@@ -5,23 +5,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.Map;
 
 @RestController
-public class PowerController {
+public class NetworkController {
 
     @Autowired
     private Utils utils;
 
-    @GetMapping("/api/watts")
-    public double getWatts() throws IOException, InterruptedException {
-        return utils.getCpuWatts();
+    @GetMapping("/api/network")
+    public String getNetwork() {
+        return utils.getNetworkSpeed();
     }
 
-    @GetMapping("/api/wattsjson")
-    public Map<String, Double> getJsonWatts() throws IOException, InterruptedException {
-        return utils.getJsonCpuWatts();
+    @GetMapping("/api/networkjson")
+    public Map<String, Double> getJsonNetwork() {
+        return utils.getJsonNetworkSpeed();
     }
-
 }

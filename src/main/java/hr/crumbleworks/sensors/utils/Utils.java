@@ -14,6 +14,10 @@ import java.util.Map;
 @Component
 public class Utils {
     private static final String ENERGY_PATH = "/sys/class/powercap/intel-rapl:0/energy_uj";
+    private static final String NETWORK_COMMAND = " RX1=$(cat /proc/net/dev | grep $INTERFACE | awk '{print $2}'); " +
+            "TX1=$(cat /proc/net/dev | grep $INTERFACE | awk '{print $10}'); sleep 1; RX2=$(cat /proc/net/dev | grep" +
+            " $INTERFACE | awk '{print $2}'); TX2=$(cat /proc/net/dev | grep $INTERFACE | awk '{print $10}'); RX=$((" +
+            " (RX2 - RX1)*8/1000 )); TX=$(( (TX2 - TX1)*8/1000 )); echo \"Down:${RX} | Up:${TX}\"";
 
     @Value("${system.sensors.command}")
     private String sensorsCommand;
@@ -23,6 +27,9 @@ public class Utils {
 
     @Value("${system.sensors.core}")
     private String coreRegex;
+
+    @Value("${system.sensors.network}")
+    private String networkInterface;
 
     public String getCpuTemps() {
         StringBuilder output = new StringBuilder();
@@ -69,7 +76,7 @@ public class Utils {
         return tempMap;
     }
 
-    public static double getCpuWatts() throws IOException, InterruptedException {
+    public double getCpuWatts() throws IOException, InterruptedException {
         long e1 = readEnergy();
         Thread.sleep(1000);
         long e2 = readEnergy();
@@ -83,15 +90,51 @@ public class Utils {
         return watts;
     }
 
-    private static long readEnergy() throws IOException {
+    private long readEnergy() throws IOException {
         String content = Files.readString(Paths.get(ENERGY_PATH)).trim();
         return Long.parseLong(content);
     }
 
-    public static Map<String, Double> getJsonCpuWatts() throws IOException, InterruptedException {
+    public Map<String, Double> getJsonCpuWatts() throws IOException, InterruptedException {
         Map<String, Double> wattMap = new HashMap<>();
         wattMap.put("watts", getCpuWatts());
         return wattMap;
+    }
+
+    public String getNetworkSpeed() {
+        StringBuilder output = new StringBuilder();
+        try {
+            ProcessBuilder pb = new ProcessBuilder("bash", "-c", networkInterface + NETWORK_COMMAND);
+            Process process = pb.start();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+            process.waitFor();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error: " + e.getMessage();
+        }
+        return output.toString().trim();
+    }
+
+    public Map<String, Double> getJsonNetworkSpeed() {
+        Map<String, Double> networkMap = new HashMap<>();
+        String line = getNetworkSpeed();
+        if (line.startsWith("Down")) {
+            String[] parts = line.split("\\|");
+            for (String part : parts) {
+                String[] keyValue = part.trim().split(":");
+                if (keyValue.length == 2) {
+                    String direction = keyValue[0].trim().toLowerCase();
+                    double speed = Double.parseDouble(keyValue[1].trim());
+                    networkMap.put(direction, speed);
+                }
+            }
+        }
+        return networkMap;
     }
 
 }

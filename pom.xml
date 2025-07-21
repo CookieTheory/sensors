@@ -14,7 +14,7 @@
 
 	<groupId>hr.crumbleworks</groupId>
 	<artifactId>sensors</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<description>Project that reports internal server CPU temperature info and gives simple GUI on frontend</description>
 
 	<properties>
@@ -30,7 +30,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
