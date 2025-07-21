@@ -10,6 +10,7 @@ function getStrokeColor(temp) {
 
 function App() {
     const [temps, setTemps] = useState({});
+    const [watts, setWatts] = useState({});
 
     useEffect(() => {
         const fetchTemps = () => {
@@ -25,6 +26,20 @@ function App() {
         return () => clearInterval(interval); // cleanup on unmount
     }, []);
 
+    useEffect(() => {
+        const fetchWatts = () => {
+            fetch('/sensors/api/wattsjson')
+                .then(res => res.json())
+                .then(data => setWatts(data))
+                .catch(err => console.error('Error fetching watts:', err));
+        };
+
+        fetchWatts(); // initial fetch
+        const interval = setInterval(fetchWatts, 1000); // every second
+
+        return () => clearInterval(interval); // cleanup on unmount
+    }, []);
+
     // Separate package and cores
     const entries = Object.entries(temps);
     const packageEntry = entries.find(([key]) => key.toLowerCase().includes('package'));
@@ -36,36 +51,50 @@ function App() {
         };
         return getCoreNumber(keyA) - getCoreNumber(keyB);
     });
+    const wattEntry = Object.entries(watts).find(([key]) => key.toLowerCase().includes('watts'));
 
     return (
         <>
-              {packageEntry && (
-                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                  <Progress
-                    type="dashboard"
-                    percent={Math.round(packageEntry[1])}
-                    format={() => `${Math.round(packageEntry[1])}°C`}
-                    strokeColor={getStrokeColor(packageEntry[1])}
-                    trailColor="#FFFFFF"
-                  />
-                  <div style={{ color: 'white', marginTop: '8px' }}>{packageEntry[0]}</div>
-                </div>
-              )}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '40px' }}>
+                {packageEntry && (
+                    <div style={{ textAlign: 'center', marginBottom: '4px' }}>
+                        <Progress
+                            type="dashboard"
+                            percent={Math.round(packageEntry[1])}
+                            format={() => `${Math.round(packageEntry[1])}°C`}
+                            strokeColor={getStrokeColor(packageEntry[1])}
+                            trailColor="#FFFFFF"
+                        />
+                    </div>
+                )}
+                {wattEntry && (
+                    <div style={{ textAlign: 'center', marginBottom: '4px' }}>
+                        <Progress
+                            type="dashboard"
+                            percent={Math.round(wattEntry[1])}
+                            format={() => `${Number(wattEntry[1]).toFixed(2)} W`}
+                            strokeColor={getStrokeColor(wattEntry[1])}
+                            trailColor="#FFFFFF"
+                        />
+                    </div>
+                )}
+            </div>
+            <div style={{ color: 'white', marginBottom: '40px' }}>{"Package"}</div>
 
-              <Space wrap size="large" style={{ justifyContent: 'center', width: '100%' }}>
+            <Space wrap size="large" style={{ justifyContent: 'center', width: '100%' }}>
                 {sortedEntries.map(([label, temp], index) => (
-                  <div key={index} style={{ textAlign: 'center' }}>
-                    <Progress
-                      type="dashboard"
-                      percent={Math.round(temp)}
-                      format={() => `${Math.round(temp)}°C`}
-                      strokeColor={getStrokeColor(temp)}
-                      trailColor="#FFFFFF"
-                    />
-                    <div style={{ color: 'white', marginTop: '8px' }}>{label}</div>
-                  </div>
+                    <div key={index} style={{ textAlign: 'center' }}>
+                        <Progress
+                            type="dashboard"
+                            percent={Math.round(temp)}
+                            format={() => `${Math.round(temp)}°C`}
+                            strokeColor={getStrokeColor(temp)}
+                            trailColor="#FFFFFF"
+                        />
+                        <div style={{ color: 'white', marginTop: '0px' }}>{label}</div>
+                    </div>
                 ))}
-              </Space>
+            </Space>
             </>
     )
 }

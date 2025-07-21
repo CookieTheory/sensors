@@ -4,12 +4,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
 public class Utils {
+    private static final String ENERGY_PATH = "/sys/class/powercap/intel-rapl:0/energy_uj";
 
     @Value("${system.sensors.command}")
     private String sensorsCommand;
@@ -63,6 +67,31 @@ public class Utils {
             throw new RuntimeException("Failed to read sensors output");
         }
         return tempMap;
+    }
+
+    public static double getCpuWatts() throws IOException, InterruptedException {
+        long e1 = readEnergy();
+        Thread.sleep(1000);
+        long e2 = readEnergy();
+
+        long deltaEnergy = e2 - e1;
+        if (deltaEnergy < 0) {
+            deltaEnergy += Long.MAX_VALUE;
+        }
+
+        double watts = deltaEnergy / 1_000_000.0;
+        return watts;
+    }
+
+    private static long readEnergy() throws IOException {
+        String content = Files.readString(Paths.get(ENERGY_PATH)).trim();
+        return Long.parseLong(content);
+    }
+
+    public static Map<String, Double> getJsonCpuWatts() throws IOException, InterruptedException {
+        Map<String, Double> wattMap = new HashMap<>();
+        wattMap.put("watts", getCpuWatts());
+        return wattMap;
     }
 
 }
