@@ -54,7 +54,7 @@ It shows all sensor data in small dashboards, green for temps below 50°, orange
 
 ## 🛠 Technologies used
 
-- Java 17 + Spring Boot
+- Java 21 + Spring Boot
 - Vite + React + Axios
 - Linux lm_sensors library
 - REST API
