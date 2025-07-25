@@ -14,8 +14,8 @@ Built with:
 
 ## 📁 Project Structure
 
-git root/
-├── src/main/ # Java Spring Boot backend (sensor data API)
+git root/  
+├── src/main/ # Java Spring Boot backend (sensor data API)  
 └── src/main/webapp/ # Vite + React frontend (dashboard UI)
 
 ## 🚀 Getting Started
@@ -32,13 +32,13 @@ Template for application.properties can be found under src/main/resources/.
 
 The backend will start at http://localhost:{provided port in app.properties}
 
-API endpoints:
-├── /api/temps
-├── /api/tempsjson
-├── /api/watts
-├── /api/wattsjson
-├── /api/network
-└── /api/networkjson
+API endpoints:  
+├── /api/temps  
+├── /api/tempsjson  
+├── /api/watts  
+├── /api/wattsjson  
+├── /api/network  
+└── /api/networkjson  
 
 Frontend will start at:
 http://localhost:{provided port in app.properties}/{provided root in app.properties}
